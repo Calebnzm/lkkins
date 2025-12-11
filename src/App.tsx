@@ -51,16 +51,15 @@ const services = [
     features: ["Event-ready packaging", "Small batch options", "Quality guaranteed"],
   },
 ];
-
 function Hero() {
-  const [current, setCurrent] = useState(0);
+  const [current, setCurrent] = useState(0)
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setCurrent((prev) => (prev + 1) % images.length);
-    }, 5000);
-    return () => clearInterval(interval);
-  }, []);
+      setCurrent((prev) => (prev + 1) % images.length)
+    }, 5000)
+    return () => clearInterval(interval)
+  }, [])
 
   return (
     <section className="relative min-h-[90vh] flex items-center overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
@@ -73,34 +72,31 @@ function Hero() {
               index === current ? "opacity-100" : "opacity-0"
             }`}
           >
-            <img
-              src={src}
-              alt=""
-              className="w-full h-full object-cover"
-            />
+            <img src={src || "/placeholder.svg"} alt="" className="w-full h-full object-cover" />
           </div>
         ))}
+        <div className="absolute inset-0 bg-gradient-to-r from-slate-900/90 via-slate-900/60 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-slate-900/40 via-transparent to-slate-900/20" />
       </div>
 
       {/* Content */}
       <div className="relative z-10 container mx-auto px-6 py-20">
         <div className="max-w-4xl">
-          <h2 className="text-5xl md:text-7xl font-bold mb-6 leading-tight text-amber-500">
+          <h2 className="text-5xl md:text-7xl font-bold mb-6 leading-tight text-white">
             Branded Apparel That{" "}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-500 to-orange-600">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-orange-500">
               Elevates Your Team
             </span>
           </h2>
-          <p className="text-xl md:text-2xl mb-10 text-amber-500 leading-relaxed max-w-2xl">
-            Premium corporate uniforms, sports kits, and promotional wear. Delivered fast, crafted to last, designed to impress.
+          <p className="text-xl md:text-2xl mb-10 text-gray-200 leading-relaxed max-w-2xl">
+            Premium corporate uniforms, sports kits, and promotional wear. Delivered fast, crafted to last, designed to
+            impress.
           </p>
           <div className="flex flex-wrap gap-4 mb-12">
             <Button
               size="lg"
               className="bg-amber-500 hover:bg-amber-600 text-white h-14 px-8 text-lg font-semibold rounded-full shadow-xl hover:shadow-2xl transition-all duration-300"
-              onClick={() =>
-                document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" })
-              }
+              onClick={() => document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" })}
             >
               <Mail className="mr-2 h-5 w-5" />
               Get Your Custom Quote
@@ -108,7 +104,7 @@ function Hero() {
             <Button
               size="lg"
               variant="outline"
-              className="h-14 px-8 text-lg rounded-full border-2 border-gray-900 text-gray-900 bg-white hover:bg-gray-900 hover:text-white transition-all duration-300"
+              className="h-14 px-8 text-lg rounded-full border-2 border-white/30 text-white bg-white/10 backdrop-blur-sm hover:bg-white hover:text-gray-900 transition-all duration-300"
               asChild
             >
               <a href="/catalog.pdf" download>
@@ -118,18 +114,18 @@ function Hero() {
             </Button>
           </div>
 
-          {/* Trust Badges */}
-          <div className="flex flex-wrap gap-6 text-gray-900">
+          {/* Trust Badges - updated for dark background */}
+          <div className="flex flex-wrap gap-6 text-gray-200">
             <div className="flex items-center gap-2">
-              <CheckCircle2 className="h-5 w-5 text-amber-500" />
+              <CheckCircle2 className="h-5 w-5 text-amber-400" />
               <span className="text-sm font-medium">Fast Turnaround</span>
             </div>
             <div className="flex items-center gap-2">
-              <CheckCircle2 className="h-5 w-5 text-amber-500" />
+              <CheckCircle2 className="h-5 w-5 text-amber-400" />
               <span className="text-sm font-medium">Premium Quality</span>
             </div>
             <div className="flex items-center gap-2">
-              <CheckCircle2 className="h-5 w-5 text-amber-500" />
+              <CheckCircle2 className="h-5 w-5 text-amber-400" />
               <span className="text-sm font-medium">Small Batch Friendly</span>
             </div>
           </div>
@@ -143,14 +139,14 @@ function Hero() {
             key={index}
             onClick={() => setCurrent(index)}
             className={`h-2 rounded-full transition-all duration-300 ${
-              index === current ? "w-8 bg-amber-500" : "w-2 bg-gray-800/50 hover:bg-gray-800"
+              index === current ? "w-8 bg-amber-500" : "w-2 bg-white/50 hover:bg-white/80"
             }`}
             aria-label={`Go to slide ${index + 1}`}
           />
         ))}
       </div>
     </section>
-  );
+  )
 }
 
 function Services() {
