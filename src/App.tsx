@@ -5,8 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Sparkles, ShieldCheck, Zap, Download, Calendar, Mail, CheckCircle2, Phone, MapPin, Globe, Instagram, Linkedin } from "lucide-react";
 import { toast } from "sonner";
-import { addDoc, collection, serverTimestamp } from "firebase/firestore";
-import { db } from "./firebase";
+import emailjs from "@emailjs/browser";
 
 
 type FormState = {
@@ -271,24 +270,53 @@ function ContactForm() {
   });
   const [isLoading, setIsLoading] = useState(false);
 
-
+  // EmailJS Configuration - uses environment variables
+  // Create a .env.local file with your EmailJS credentials (see EMAILJS_SETUP.md)
+  const EMAILJS_SERVICE_ID = import.meta.env.VITE_EMAILJS_SERVICE_ID || "";
+  const EMAILJS_TEMPLATE_ID = import.meta.env.VITE_EMAILJS_TEMPLATE_ID || "";
+  const EMAILJS_PUBLIC_KEY = import.meta.env.VITE_EMAILJS_PUBLIC_KEY || "";
+  const RECIPIENT_EMAIL = import.meta.env.VITE_RECIPIENT_EMAIL || "LKKINSElegance@gmail.com";
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    
+    // Basic validation
+    if (!form.name.trim() || !form.email.trim() || !form.phone.trim()) {
+      toast.error("Please fill in all required fields.");
+      return;
+    }
+
+    // Check if EmailJS is configured
+    if (!EMAILJS_SERVICE_ID || !EMAILJS_TEMPLATE_ID || !EMAILJS_PUBLIC_KEY) {
+      toast.error("Email service is not configured. Please check your environment variables.");
+      console.error("EmailJS configuration missing. Please set up .env.local file.");
+      return;
+    }
+
     setIsLoading(true);
     try {
-      await addDoc(collection(db, "enquiries"), {
-        name: form.name,
-        email: form.email,
+      // Prepare email template parameters
+      const templateParams = {
+        from_name: form.name,
+        from_email: form.email,
         phone: form.phone,
-        company: form.company || null,
-        message: form.message || null,
-        createdAt: serverTimestamp(),
-      });
+        company: form.company || "Not provided",
+        message: form.message || "No message provided",
+        to_email: RECIPIENT_EMAIL,
+      };
+
+      // Send email using EmailJS
+      await emailjs.send(
+        EMAILJS_SERVICE_ID,
+        EMAILJS_TEMPLATE_ID,
+        templateParams,
+        EMAILJS_PUBLIC_KEY
+      );
+
       toast.success("Message sent! We'll get back to you within 24 hours.");
       setForm({ name: "", email: "", phone: "", company: "", message: "" });
     } catch (err) {
-      console.error(err);
+      console.error("EmailJS error:", err);
       toast.error("Something went wrong. Please try again or contact us directly.");
     } finally {
       setIsLoading(false);
@@ -310,7 +338,7 @@ function ContactForm() {
 
           <Card className="border-2 shadow-xl bg-white">
             <CardContent className="pt-8">
-              <div className="space-y-6">
+              <form onSubmit={handleSubmit} className="space-y-6">
                 <div>
                   <label className="block text-sm font-semibold mb-2 text-gray-900">
                     Your Name <span className="text-red-500">*</span>
@@ -376,7 +404,7 @@ function ContactForm() {
 
                 <div className="flex flex-col sm:flex-row gap-4 pt-4">
                   <Button
-                    onClick={handleSubmit}
+                    type="submit"
                     disabled={isLoading}
                     className="flex-1 bg-amber-500 hover:bg-amber-600 text-white h-12 text-lg font-semibold rounded-full shadow-lg hover:shadow-xl transition-all duration-300"
                   >
@@ -394,7 +422,7 @@ function ContactForm() {
                     </a>
                   </Button>
                 </div>
-              </div>
+              </form>
             </CardContent>
           </Card>
         </div>
