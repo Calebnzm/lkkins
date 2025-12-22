@@ -3,7 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Sparkles, ShieldCheck, Zap, Download, Calendar, Mail, CheckCircle2, Phone, MapPin, Globe, Instagram, Linkedin } from "lucide-react";
+import { Toaster } from "@/components/ui/sonner";
+import { Sparkles, ShieldCheck, Zap, Mail, CheckCircle2, Phone, MapPin, Globe } from "lucide-react";
 import { toast } from "sonner";
 import emailjs from "@emailjs/browser";
 
@@ -48,6 +49,21 @@ const services = [
     title: "Promotional Merchandise",
     desc: "From jackets and hoodies to branded giveaways, create lasting impressions at events, trade shows, and corporate activations with premium merchandise.",
     features: ["Event-ready packaging", "Small batch options", "Quality guaranteed"],
+  },
+];
+
+const coreValues = [
+  {
+    title: "Precision",
+    desc: "Attention to detail in every stitch and every logo.",
+  },
+  {
+    title: "Reliability",
+    desc: "Delivering on time, every time, for every client.",
+  },
+  {
+    title: "Professionalism",
+    desc: "Elevating our clients' brands through superior quality.",
   },
 ];
 function Hero() {
@@ -99,17 +115,6 @@ function Hero() {
             >
               <Mail className="mr-2 h-5 w-5" />
               Get Your Custom Quote
-            </Button>
-            <Button
-              size="lg"
-              variant="outline"
-              className="h-14 px-8 text-lg rounded-full border-2 border-white/30 text-white bg-white/10 backdrop-blur-sm hover:bg-white hover:text-gray-900 transition-all duration-300"
-              asChild
-            >
-              <a href="/catalog.pdf" download>
-                <Download className="mr-2 h-5 w-5" />
-                Download Catalog
-              </a>
             </Button>
           </div>
 
@@ -197,6 +202,60 @@ function Services() {
   );
 }
 
+function MissionVision() {
+  return (
+    <section className="py-24 bg-slate-900 text-white">
+      <div className="container mx-auto px-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-10 items-start">
+          <div className="lg:col-span-2 space-y-8">
+            <div>
+              <p className="text-amber-400 uppercase tracking-[0.2em] text-sm font-semibold mb-2">
+                Who We Are
+              </p>
+              <h2 className="text-4xl md:text-5xl font-bold leading-tight">
+                Mission, Vision & Core Values
+              </h2>
+              <p className="text-lg text-gray-200 mt-4 max-w-3xl">
+                Clear purpose and consistent standards guide how we serve every client—whether outfitting a full institution or a single team.
+              </p>
+            </div>
+
+            <div className="grid gap-6 md:grid-cols-2">
+              <div className="p-6 rounded-2xl bg-white/5 border border-white/10 shadow-xl">
+                <p className="text-amber-300 text-sm font-semibold mb-2">Mission</p>
+                <p className="text-lg text-gray-100 leading-relaxed">
+                  To provide institutions and individuals with high-quality, branded hoodies, T-shirts, polo shirts, and caps that build professional pride and lasting impressions.
+                </p>
+              </div>
+              <div className="p-6 rounded-2xl bg-white/5 border border-white/10 shadow-xl">
+                <p className="text-amber-300 text-sm font-semibold mb-2">Vision</p>
+                <p className="text-lg text-gray-100 leading-relaxed">
+                  To be the most trusted partner for custom outfit solutions, recognized for seamless service and exceptional garment durability.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="p-6 rounded-2xl bg-white/5 border border-white/10 shadow-xl">
+            <p className="text-amber-300 text-sm font-semibold mb-4">Core Values</p>
+            <div className="space-y-4">
+              {coreValues.map((value) => (
+                <div key={value.title} className="flex items-start gap-3">
+                  <CheckCircle2 className="h-5 w-5 text-amber-400 shrink-0 mt-0.5" />
+                  <div>
+                    <p className="font-semibold text-white">{value.title}</p>
+                    <p className="text-gray-200 text-sm leading-relaxed">{value.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function Mockups() {
   return (
     <section className="py-24 bg-white">
@@ -232,33 +291,34 @@ function Mockups() {
   );
 }
 
-function DownloadBrochure() {
-  return (
-    <section className="py-24 bg-gradient-to-br from-amber-500 to-orange-600">
-      <div className="container mx-auto px-6">
-        <div className="max-w-4xl mx-auto text-center">
-          <Download className="h-16 w-16 text-white mx-auto mb-6" />
-          <h2 className="text-4xl md:text-5xl font-bold mb-6 text-white">
-            Download Our Complete Catalog
-          </h2>
-          <p className="text-xl mb-10 text-white/95 leading-relaxed">
-            Explore our full range of styles, fabrics, branding options, and pricing. Everything you need to make an informed decision, in one comprehensive guide.
-          </p>
-          <Button
-            size="lg"
-            className="bg-white text-amber-600 hover:bg-gray-100 h-14 px-10 text-lg font-semibold rounded-full shadow-xl hover:shadow-2xl transition-all duration-300"
-            asChild
-          >
-            <a href="/catalog.pdf" download>
-              <Download className="mr-2 h-5 w-5" />
-              Get the Brochure
-            </a>
-          </Button>
-        </div>
-      </div>
-    </section>
-  );
-}
+// Download brochure section intentionally disabled for now.
+// function DownloadBrochure() {
+//   return (
+//     <section className="py-24 bg-gradient-to-br from-amber-500 to-orange-600">
+//       <div className="container mx-auto px-6">
+//         <div className="max-w-4xl mx-auto text-center">
+//           <Download className="h-16 w-16 text-white mx-auto mb-6" />
+//           <h2 className="text-4xl md:text-5xl font-bold mb-6 text-white">
+//             Download Our Complete Catalog
+//           </h2>
+//           <p className="text-xl mb-10 text-white/95 leading-relaxed">
+//             Explore our full range of styles, fabrics, branding options, and pricing. Everything you need to make an informed decision, in one comprehensive guide.
+//           </p>
+//           <Button
+//             size="lg"
+//             className="bg-white text-amber-600 hover:bg-gray-100 h-14 px-10 text-lg font-semibold rounded-full shadow-xl hover:shadow-2xl transition-all duration-300"
+//             asChild
+//           >
+//             <a href="/catalog.pdf" download>
+//               <Download className="mr-2 h-5 w-5" />
+//               Get the Brochure
+//             </a>
+//           </Button>
+//         </div>
+//       </div>
+//     </section>
+//   );
+// }
 
 function ContactForm() {
   const [form, setForm] = useState<FormState>({
@@ -410,17 +470,6 @@ function ContactForm() {
                   >
                     {isLoading ? "Sending..." : "Send Inquiry"}
                   </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="h-12 border-2 border-amber-500 text-amber-600 hover:bg-amber-50 rounded-full"
-                    asChild
-                  >
-                    <a href="https://calendly.com/your-link" target="_blank" rel="noreferrer">
-                      <Calendar className="mr-2 h-5 w-5" />
-                      Schedule a Call
-                    </a>
-                  </Button>
                 </div>
               </form>
             </CardContent>
@@ -438,10 +487,15 @@ function Header() {
         <div className="flex items-center justify-between py-4">
           {/* Logo & Brand */}
           <div className="flex items-center gap-4">
-            <div className="relative group">
-              <div className="absolute inset-0 bg-gradient-to-r from-amber-400 to-orange-500 blur-lg opacity-0 group-hover:opacity-50 transition-opacity duration-500"></div>
-              <div className="relative w-14 h-14 bg-gradient-to-br from-amber-500 to-orange-600 text-white font-bold flex items-center justify-center rounded-2xl shadow-xl transform group-hover:scale-105 transition-transform duration-300">
-                <span className="text-xl tracking-tight">LE</span>
+            <div className="relative">
+              <div className="absolute inset-0 bg-gradient-to-r from-amber-400 to-orange-500 blur-lg opacity-30"></div>
+              <div className="relative w-14 h-14 rounded-2xl overflow-hidden shadow-xl bg-white">
+                <img
+                  src="/logo.png"
+                  alt="LKKINS Elegance Logo"
+                  className="w-full h-full object-contain p-2"
+                  loading="lazy"
+                />
               </div>
             </div>
             <div>
@@ -456,17 +510,6 @@ function Header() {
 
           {/* Navigation Actions */}
           <nav className="flex items-center gap-3">
-            <Button
-              variant="outline"
-              size="sm"
-              className="hidden md:inline-flex rounded-full border-2 border-gray-300 hover:border-amber-500 hover:text-amber-600 transition-all duration-300"
-              asChild
-            >
-              <a href="/catalog.pdf" download>
-                <Download className="mr-2 h-4 w-4" />
-                Catalog
-              </a>
-            </Button>
             <Button
               size="sm"
               className="bg-amber-500 hover:bg-amber-600 text-white rounded-full shadow-md hover:shadow-lg transition-all duration-300 font-semibold"
@@ -498,8 +541,13 @@ function Footer() {
           {/* Brand Section */}
           <div className="lg:col-span-2">
             <div className="flex items-center gap-4 mb-6">
-              <div className="w-16 h-16 bg-gradient-to-br from-amber-500 to-orange-600 text-white font-bold flex items-center justify-center rounded-2xl shadow-2xl">
-                <span className="text-2xl">LE</span>
+              <div className="w-16 h-16 rounded-2xl overflow-hidden shadow-2xl bg-white/5 border border-white/10">
+                <img
+                  src="/logo.png"
+                  alt="LKKINS Elegance Logo"
+                  className="w-full h-full object-contain p-2"
+                  loading="lazy"
+                />
               </div>
               <div>
                 <h3 className="text-2xl font-bold text-white">
@@ -515,22 +563,20 @@ function Footer() {
             </p>
             <div className="flex gap-4">
               <a
-                href="https://instagram.com"
+                href="https://www.tiktok.com/@lkkins.elegancep"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-10 h-10 rounded-full bg-white/10 hover:bg-amber-500 flex items-center justify-center transition-all duration-300 hover:scale-110"
-                aria-label="Instagram"
+                aria-label="TikTok"
               >
-                <Instagram className="h-5 w-5 text-white" />
-              </a>
-              <a
-                href="https://linkedin.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-10 h-10 rounded-full bg-white/10 hover:bg-amber-500 flex items-center justify-center transition-all duration-300 hover:scale-110"
-                aria-label="LinkedIn"
-              >
-                <Linkedin className="h-5 w-5 text-white" />
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  className="h-5 w-5 text-white fill-current"
+                  aria-hidden="true"
+                >
+                  <path d="M21 8.25a6.75 6.75 0 01-3.9-1.23v7.18A5.8 5.8 0 0111.4 20 5.4 5.4 0 016 14.6 5.4 5.4 0 0111.4 9.2c.19 0 .38.01.57.03v2.3a3.08 3.08 0 00-.57-.05 3.1 3.1 0 00-3.1 3.12 3.1 3.1 0 003.1 3.12 3.3 3.3 0 003.2-2.36l.1-.33V4h2.3a4.44 4.44 0 00.05.64 4.44 4.44 0 004.05 3.58v2.03z" />
+                </svg>
               </a>
             </div>
           </div>
@@ -556,11 +602,6 @@ function Footer() {
                   Promotional Merchandise
                 </a>
               </li>
-              <li>
-                <a href="/catalog.pdf" download className="hover:text-amber-400 transition-colors duration-300">
-                  Download Catalog
-                </a>
-              </li>
             </ul>
           </div>
 
@@ -572,20 +613,29 @@ function Footer() {
             <ul className="space-y-4 text-gray-300">
               <li className="flex items-start gap-3">
                 <MapPin className="h-5 w-5 text-amber-400 shrink-0 mt-0.5" />
-                <span>Nairobi, Kenya</span>
+                <span>Baraka Court Mall off Ngong Road, shop FD1.</span>
               </li>
               <li className="flex items-start gap-3">
                 <Mail className="h-5 w-5 text-amber-400 shrink-0 mt-0.5" />
                 <a
-                  href="mailto:LKKINSElegance@gmail.com"
-                  className="hover:text-amber-400 transition-colors duration-300 break-all"
+                  href="mailto:sales@lkkinselegance.com"
+                  className="hover:text-amber-400 transition-colors duration-300 whitespace-nowrap"
                 >
-                  LKKINSElegance@gmail.com
+                  sales@lkkinselegance.com
+                </a>
+              </li>
+              <li className="flex items-start gap-3">
+                <Mail className="h-5 w-5 text-amber-400 shrink-0 mt-0.5" />
+                <a
+                  href="mailto:director@lkkinselegance.com"
+                  className="hover:text-amber-400 transition-colors duration-300 whitespace-nowrap"
+                >
+                  director@lkkinselegance.com
                 </a>
               </li>
               <li className="flex items-start gap-3">
                 <Phone className="h-5 w-5 text-amber-400 shrink-0 mt-0.5" />
-                <span>+254 712 345 678</span>
+                <span>0796 905661</span>
               </li>
               <li className="flex items-start gap-3">
                 <Globe className="h-5 w-5 text-amber-400 shrink-0 mt-0.5" />
@@ -619,11 +669,25 @@ export default function Index() {
       <main className="flex-grow">
         <Hero />
         <Services />
+        <MissionVision />
         <Mockups />
-        <DownloadBrochure />
+        {/* <DownloadBrochure /> */}
         <ContactForm />
       </main>
       <Footer />
+      <Toaster
+        position="top-center"
+        richColors
+        closeButton
+        toastOptions={{
+          classNames: {
+            toast:
+              "bg-gradient-to-r from-amber-500 to-orange-500 text-white border border-amber-200/40 shadow-2xl",
+            actionButton: "bg-white text-amber-600",
+            cancelButton: "bg-white/10 text-white",
+          },
+        }}
+      />
     </div>
   );
 }
