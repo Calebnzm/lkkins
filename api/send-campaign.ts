@@ -1,18 +1,23 @@
 import { Redis } from "@upstash/redis";
 
-const redis = new Redis({
-  url:
-    process.env.UPSTASH_REDIS_REST_URL ||
-    process.env.KV_REST_API_URL ||
-    process.env.KV_URL ||
-    process.env.REDIS_URL ||
-    "",
-  token:
-    process.env.UPSTASH_REDIS_REST_TOKEN ||
-    process.env.KV_REST_API_TOKEN ||
-    process.env.KV_REST_API_READ_ONLY_TOKEN ||
-    "",
-});
+const redisUrl =
+  process.env.KV_REST_API_URL ||
+  process.env.KV_URL ||
+  process.env.REDIS_URL ||
+  "";
+
+const redisToken =
+  process.env.KV_REST_API_TOKEN ||
+  process.env.KV_REST_API_READ_ONLY_TOKEN ||
+  "";
+
+const redis =
+  redisUrl && redisToken
+    ? new Redis({
+        url: redisUrl,
+        token: redisToken,
+      })
+    : null;
 
 const EMAILJS_API_URL = "https://api.emailjs.com/api/v1.0/email/send";
 
@@ -22,14 +27,14 @@ export default async function handler(req: any, res: any) {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
-  if (!redis || !redis["rest"]?.url) {
-    console.error("Upstash/Redis environment variables are missing");
+  if (!redis) {
+    console.error("Redis environment variables are missing (URL/token)");
     return res.status(500).json({ error: "Storage is not configured on the server." });
   }
 
-  const serviceId = process.env.EMAILJS_SERVICE_ID;
-  const templateId = process.env.EMAILJS_CAMPAIGN_TEMPLATE_ID;
-  const publicKey = process.env.EMAILJS_PUBLIC_KEY;
+  const serviceId = process.env.EMAILJS_SERVICE_ID || process.env.VITE_EMAILJS_SERVICE_ID;
+  const templateId = process.env.EMAILJS_CAMPAIGN_TEMPLATE_ID || process.env.VITE_EMAILJS_TEMPLATE_ID;
+  const publicKey = process.env.EMAILJS_PUBLIC_KEY || process.env.VITE_EMAILJS_PUBLIC_KEY;
 
   if (!serviceId || !templateId || !publicKey) {
     console.error("Missing EmailJS environment variables");

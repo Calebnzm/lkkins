@@ -1,18 +1,23 @@
 import { Redis } from "@upstash/redis";
 
-const redis = new Redis({
-  url:
-    process.env.UPSTASH_REDIS_REST_URL ||
-    process.env.KV_REST_API_URL ||
-    process.env.KV_URL ||
-    process.env.REDIS_URL ||
-    "",
-  token:
-    process.env.UPSTASH_REDIS_REST_TOKEN ||
-    process.env.KV_REST_API_TOKEN ||
-    process.env.KV_REST_API_READ_ONLY_TOKEN ||
-    "",
-});
+const redisUrl =
+  process.env.KV_REST_API_URL ||
+  process.env.KV_URL ||
+  process.env.REDIS_URL ||
+  "";
+
+const redisToken =
+  process.env.KV_REST_API_TOKEN ||
+  process.env.KV_REST_API_READ_ONLY_TOKEN ||
+  "";
+
+const redis =
+  redisUrl && redisToken
+    ? new Redis({
+        url: redisUrl,
+        token: redisToken,
+      })
+    : null;
 
 export default async function handler(req: any, res: any) {
   if (req.method !== "POST") {
@@ -20,8 +25,8 @@ export default async function handler(req: any, res: any) {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
-  if (!redis || !redis["rest"]?.url) {
-    console.error("Upstash/Redis environment variables are missing");
+  if (!redis) {
+    console.error("Redis environment variables are missing (URL/token)");
     return res.status(500).json({ error: "Storage is not configured on the server." });
   }
 
