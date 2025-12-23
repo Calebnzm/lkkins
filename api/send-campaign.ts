@@ -34,11 +34,11 @@ export default async function handler(req: any, res: any) {
 
   const serviceId = process.env.EMAILJS_SERVICE_ID || process.env.VITE_EMAILJS_SERVICE_ID;
   const templateId = process.env.EMAILJS_CAMPAIGN_TEMPLATE_ID || process.env.VITE_EMAILJS_TEMPLATE_ID;
-  // EmailJS requires the private key on server-to-server calls (public key is browser-only)
   const privateKey = process.env.EMAILJS_PRIVATE_KEY;
+  const publicKey = process.env.EMAILJS_PUBLIC_KEY || process.env.VITE_EMAILJS_PUBLIC_KEY;
 
-  if (!serviceId || !templateId || !privateKey) {
-    console.error("Missing EmailJS environment variables (serviceId/templateId/privateKey)");
+  if (!serviceId || !templateId || !privateKey || !publicKey) {
+    console.error("Missing EmailJS environment variables (serviceId/templateId/privateKey/publicKey)");
     return res.status(500).json({ error: "EmailJS is not configured on the server." });
   }
 
@@ -69,6 +69,7 @@ export default async function handler(req: any, res: any) {
             service_id: serviceId,
             template_id: templateId,
             accessToken: privateKey,
+            user_id: publicKey,
             template_params: templateParams,
           }),
         });
