@@ -1,0 +1,9 @@
+{
+  "crons": [
+    {
+      "path": "/api/send-campaign",
+      "schedule": "0 9 */14 * *"
+    }
+  ]
+}
+

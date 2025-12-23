@@ -374,6 +374,22 @@ function ContactForm() {
       );
 
       toast.success("Message sent! We'll get back to you within 24 hours.");
+
+      // Best-effort subscription for future campaigns (handled by Vercel KV + Cron)
+      try {
+        await fetch("/api/subscribe", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email: form.email,
+            name: form.name,
+          }),
+        });
+      } catch (err) {
+        console.error("Subscribe API error:", err);
+      }
       setForm({ name: "", email: "", phone: "", company: "", message: "" });
     } catch (err) {
       console.error("EmailJS error:", err);
