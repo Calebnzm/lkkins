@@ -1,5 +1,5 @@
 import { createClient } from '@sanity/client';
-import imageUrlBuilder from '@sanity/image-url';
+import { createImageUrlBuilder } from '@sanity/image-url';
 
 // Read-only client for fetching data
 export const sanityClient = createClient({
@@ -19,7 +19,7 @@ const sanityWriteClient = createClient({
 });
 
 // Image URL builder
-const builder = imageUrlBuilder(sanityClient);
+const builder = createImageUrlBuilder(sanityClient);
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function urlFor(source: any) {

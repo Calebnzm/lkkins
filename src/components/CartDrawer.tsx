@@ -1,4 +1,4 @@
-import { X, Minus, Plus, ShoppingBag, Trash2, ArrowRight, Tag } from "lucide-react";
+import { X, Minus, Plus, ShoppingBag, Trash2, ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/context/CartContext";

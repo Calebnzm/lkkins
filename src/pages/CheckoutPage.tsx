@@ -9,8 +9,8 @@ import { useCart } from "@/context/CartContext";
 import { usePromotions } from "@/hooks/useSanity";
 import { toast } from "sonner";
 import { Toaster } from "@/components/ui/sonner";
-import emailjs from "@emailjs/browser";
 import { updateVariantStock } from "@/lib/sanity";
+import emailjs from "@emailjs/browser";
 
 type CheckoutFormData = {
     name: string;
@@ -38,18 +38,15 @@ export default function CheckoutPage() {
     const mapInstanceRef = useRef<google.maps.Map | null>(null);
     const markerRef = useRef<google.maps.Marker | null>(null);
 
-    const EMAILJS_SERVICE_ID = import.meta.env.VITE_EMAILJS_SERVICE_ID || "";
-    const EMAILJS_TEMPLATE_ID = import.meta.env.VITE_EMAILJS_TEMPLATE_ID || "";
-    const EMAILJS_PUBLIC_KEY = import.meta.env.VITE_EMAILJS_PUBLIC_KEY || "";
-    const RECIPIENT_EMAIL = import.meta.env.VITE_RECIPIENT_EMAIL || "LKKINSElegance@gmail.com";
     const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || "";
 
     useEffect(() => {
         if (items.length === 0) {
             navigate("/shop");
-            return;
         }
+    }, [items.length, navigate]);
 
+    useEffect(() => {
         // Load Google Maps script
         if (!window.google && GOOGLE_MAPS_API_KEY) {
             const existingScript = document.querySelector('script[src*="maps.googleapis.com"]');
@@ -68,7 +65,7 @@ export default function CheckoutPage() {
         } else if (window.google) {
             setMapsLoaded(true);
         }
-    }, [items.length, navigate, GOOGLE_MAPS_API_KEY]);
+    }, [GOOGLE_MAPS_API_KEY]);
 
     useEffect(() => {
         if (mapsLoaded && mapRef.current) {
@@ -177,19 +174,21 @@ export default function CheckoutPage() {
                 default:
                     discount = p.discountType?.toUpperCase() || 'SPECIAL';
             }
-
             const message = p.displayMessage ? ` - ${p.displayMessage}` : '';
-            return `🏷️ ${p.title} (${discount})${p.code ? ` - Code: ${p.code}` : ''}${message} - Ends: ${new Date(p.endDate).toLocaleDateString()}`;
+            return `🏷️ ${p.title} (${discount})${p.code ? ` - Code: ${p.code}` : ''}${message}`;
         }).join("\n");
     };
 
     const formatOrderItems = () => {
         return items
             .map(
-                (item) =>
-                    `• ${item.name} (${item.size}, ${item.color}) x${item.quantity} - KSh ${(item.price * item.quantity).toLocaleString()}`
+                (item, index) =>
+                    `${index + 1}. ${item.name}
+   Size: ${item.size} | Color: ${item.color}
+   Quantity: ${item.quantity} x KSh ${item.price.toLocaleString()}
+   Image: ${item.image}`
             )
-            .join("\n");
+            .join("\n\n");
     };
 
     async function handleSubmit(e: React.FormEvent) {
@@ -200,6 +199,11 @@ export default function CheckoutPage() {
             return;
         }
 
+        const EMAILJS_SERVICE_ID = import.meta.env.VITE_EMAILJS_SERVICE_ID;
+        const EMAILJS_TEMPLATE_ID = import.meta.env.VITE_EMAILJS_TEMPLATE_ID;
+        const EMAILJS_PUBLIC_KEY = import.meta.env.VITE_EMAILJS_PUBLIC_KEY;
+        const RECIPIENT_EMAIL = import.meta.env.VITE_RECIPIENT_EMAIL || "LKKINSElegance@gmail.com";
+
         if (!EMAILJS_SERVICE_ID || !EMAILJS_TEMPLATE_ID || !EMAILJS_PUBLIC_KEY) {
             toast.error("Email service is not configured.");
             return;
@@ -207,30 +211,35 @@ export default function CheckoutPage() {
 
         setIsLoading(true);
         try {
+            // Construct Plain Text message
             const orderMessage = `
-📦 NEW INDIVIDUAL ORDER
+📦 NEW ORDER RECEIVED
+--------------------------------
+Customer: ${form.name}
+Phone: ${form.phone}
+Address: ${form.address}
+${form.addressDetails ? `Landmark: ${form.addressDetails}` : ""}
+Notes: ${form.notes || "None"}
 
-Order Items:
+ORDER ITEMS:
+--------------------------------
 ${formatOrderItems()}
 
-📊 Order Total: KSh ${totalPrice.toLocaleString()}
+--------------------------------
+TOTAL: KSh ${totalPrice.toLocaleString()}
+--------------------------------
 
-📍 Delivery Address:
-${form.address}
-${form.addressDetails ? `\nBuilding/Landmark: ${form.addressDetails}` : ""}
-
-📞 Phone: ${form.phone}
-
-🏷️ Active Promotions at Time of Order:
+${promotions.length > 0 ? `
+APPLIED PROMOTIONS:
 ${formatPromotions()}
+` : ""}
 
-📝 Additional Notes:
-${form.notes || "None"}
-      `.trim();
+Sent via LKKINS Website
+            `.trim();
 
             const templateParams = {
                 from_name: form.name,
-                from_email: "order@lkkinselegance.com",
+                from_email: "order@lkkinselegance.com", // Placeholder
                 phone: form.phone,
                 company: "Individual Order",
                 message: orderMessage,
@@ -238,6 +247,22 @@ ${form.notes || "None"}
             };
 
             await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, templateParams, EMAILJS_PUBLIC_KEY);
+
+            // Also call subscribe API to save customer details to Sanity
+            // (Fail silently on 404 locally to avoid disrupting user experience)
+            try {
+                await fetch("/api/subscribe", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        email: "order@lkkinselegance.com",
+                        name: form.name,
+                        source: "checkout"
+                    })
+                });
+            } catch (err) {
+                console.warn("Subscribe API call failed (expected if unavailable):", err);
+            }
 
             // Update stock in Sanity for each variant
             for (const item of items) {
