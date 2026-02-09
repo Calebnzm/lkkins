@@ -1,12 +1,26 @@
 import { useEffect, useState } from "react";
+import { Routes, Route, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Toaster } from "@/components/ui/sonner";
-import { Sparkles, ShieldCheck, Zap, Mail, CheckCircle2, Phone, MapPin, Globe } from "lucide-react";
+import { Sparkles, ShieldCheck, Zap, Mail, CheckCircle2, Phone, MapPin, Globe, ShoppingBag, ArrowRight, Star, Award, Briefcase, Users, Percent, Tag } from "lucide-react";
 import { toast } from "sonner";
 import emailjs from "@emailjs/browser";
+import ShopPage from "@/pages/ShopPage";
+import CheckoutPage from "@/pages/CheckoutPage";
+import { useHeroImages, useMockups, useCorporateDiscounts, urlFor, type SanityCorporateDiscount } from "@/hooks/useSanity";
+
+// Icon mapping for dynamic icons from Sanity
+const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
+  ShieldCheck,
+  Zap,
+  Sparkles,
+  Star,
+  Award,
+  Briefcase,
+};
 
 
 type FormState = {
@@ -17,7 +31,8 @@ type FormState = {
   message?: string;
 };
 
-const images = [
+// Fallback data when Sanity content is not yet loaded
+const fallbackImages = [
   "/polos.png",
   "/sports.png",
   "/tracksuits.png",
@@ -25,56 +40,62 @@ const images = [
   "/staff.png",
 ];
 
-const mockups = [
+const fallbackMockups = [
   { src: "/polo_potrait.png", alt: "Premium Custom Polo Shirts" },
   { src: "/hoodei_potrait.png", alt: "Branded Hoodies & Outerwear" },
   { src: "/tracksuit_potrait.png", alt: "Professional Sports Kits" },
 ];
 
-const services = [
+const fallbackServices = [
   {
-    icon: ShieldCheck,
+    icon: "ShieldCheck",
     title: "Corporate Branding Solutions",
-    desc: "Elevate your team's professional image with custom-embroidered polos, shirts, and uniforms. Perfect for field teams, retail staff, and corporate events.",
+    description: "Elevate your team's professional image with custom-embroidered polos, shirts, and uniforms. Perfect for field teams, retail staff, and corporate events.",
     features: ["Custom embroidery & printing", "Premium fabric options", "Bulk order discounts"],
   },
   {
-    icon: Zap,
+    icon: "Zap",
     title: "Sports & Event Apparel",
-    desc: "High-performance team jerseys and sports kits designed for corporate sports days, tournaments, and sponsored events. Built to perform, branded to impress.",
+    description: "High-performance team jerseys and sports kits designed for corporate sports days, tournaments, and sponsored events. Built to perform, branded to impress.",
     features: ["Moisture-wicking materials", "Custom team designs", "Fast turnaround times"],
   },
   {
-    icon: Sparkles,
+    icon: "Sparkles",
     title: "Promotional Merchandise",
-    desc: "From jackets and hoodies to branded giveaways, create lasting impressions at events, trade shows, and corporate activations with premium merchandise.",
+    description: "From jackets and hoodies to branded giveaways, create lasting impressions at events, trade shows, and corporate activations with premium merchandise.",
     features: ["Event-ready packaging", "Small batch options", "Quality guaranteed"],
   },
 ];
 
-const coreValues = [
+const fallbackCoreValues = [
   {
     title: "Precision",
-    desc: "Attention to detail in every stitch and every logo.",
+    description: "Attention to detail in every stitch and every logo.",
   },
   {
     title: "Reliability",
-    desc: "Delivering on time, every time, for every client.",
+    description: "Delivering on time, every time, for every client.",
   },
   {
     title: "Professionalism",
-    desc: "Elevating our clients' brands through superior quality.",
+    description: "Elevating our clients' brands through superior quality.",
   },
 ];
 function Hero() {
   const [current, setCurrent] = useState(0)
+  const { data: heroImages } = useHeroImages();
+
+  // Use Sanity images if available, otherwise use fallback
+  const images = heroImages.length > 0
+    ? heroImages.map((img) => urlFor(img.image).width(1920).url())
+    : fallbackImages;
 
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrent((prev) => (prev + 1) % images.length)
     }, 5000)
     return () => clearInterval(interval)
-  }, [])
+  }, [images.length])
 
   return (
     <section className="relative min-h-[90vh] flex items-center overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
@@ -83,9 +104,8 @@ function Hero() {
         {images.map((src, index) => (
           <div
             key={src}
-            className={`absolute inset-0 transition-opacity duration-1000 ${
-              index === current ? "opacity-100" : "opacity-0"
-            }`}
+            className={`absolute inset-0 transition-opacity duration-1000 ${index === current ? "opacity-100" : "opacity-0"
+              }`}
           >
             <img src={src || "/placeholder.svg"} alt="" className="w-full h-full object-cover" />
           </div>
@@ -142,9 +162,8 @@ function Hero() {
           <button
             key={index}
             onClick={() => setCurrent(index)}
-            className={`h-2 rounded-full transition-all duration-300 ${
-              index === current ? "w-8 bg-amber-500" : "w-2 bg-white/50 hover:bg-white/80"
-            }`}
+            className={`h-2 rounded-full transition-all duration-300 ${index === current ? "w-8 bg-amber-500" : "w-2 bg-white/50 hover:bg-white/80"
+              }`}
             aria-label={`Go to slide ${index + 1}`}
           />
         ))}
@@ -154,8 +173,11 @@ function Hero() {
 }
 
 function Services() {
+  // Use hardcoded services data (removed from CMS)
+  const services = fallbackServices;
+
   return (
-    <section className="py-24 bg-gradient-to-b from-white to-gray-50">
+    <section id="services" className="py-24 bg-gradient-to-b from-white to-gray-50">
       <div className="container mx-auto px-6">
         <div className="text-center mb-16">
           <h2 className="text-4xl md:text-5xl font-bold mb-4 text-gray-900">
@@ -168,10 +190,10 @@ function Services() {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {services.map((service, index) => {
-            const Icon = service.icon;
+            const Icon = iconMap[service.icon] || ShieldCheck;
             return (
               <Card
-                key={index}
+                key={`service-${index}`}
                 className="border-2 hover:border-amber-500 transition-all duration-300 hover:shadow-xl bg-white"
               >
                 <CardHeader>
@@ -180,12 +202,12 @@ function Services() {
                   </div>
                   <CardTitle className="text-2xl text-gray-900">{service.title}</CardTitle>
                   <CardDescription className="text-base text-gray-600 leading-relaxed">
-                    {service.desc}
+                    {service.description}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <ul className="space-y-3">
-                    {service.features.map((feature) => (
+                    {service.features?.map((feature: string) => (
                       <li key={feature} className="flex items-start gap-2 text-gray-700">
                         <CheckCircle2 className="h-5 w-5 text-amber-500 shrink-0 mt-0.5" />
                         <span>{feature}</span>
@@ -203,8 +225,13 @@ function Services() {
 }
 
 function MissionVision() {
+  // Use hardcoded values (removed from CMS)
+  const coreValues = fallbackCoreValues;
+  const mission = "To provide institutions and individuals with high-quality, branded hoodies, T-shirts, polo shirts, and caps that build professional pride and lasting impressions.";
+  const vision = "To be the most trusted partner for custom outfit solutions, recognized for seamless service and exceptional garment durability.";
+
   return (
-    <section className="py-24 bg-slate-900 text-white">
+    <section id="about" className="py-24 bg-slate-900 text-white">
       <div className="container mx-auto px-6">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-10 items-start">
           <div className="lg:col-span-2 space-y-8">
@@ -224,13 +251,13 @@ function MissionVision() {
               <div className="p-6 rounded-2xl bg-white/5 border border-white/10 shadow-xl">
                 <p className="text-amber-300 text-sm font-semibold mb-2">Mission</p>
                 <p className="text-lg text-gray-100 leading-relaxed">
-                  To provide institutions and individuals with high-quality, branded hoodies, T-shirts, polo shirts, and caps that build professional pride and lasting impressions.
+                  {mission}
                 </p>
               </div>
               <div className="p-6 rounded-2xl bg-white/5 border border-white/10 shadow-xl">
                 <p className="text-amber-300 text-sm font-semibold mb-2">Vision</p>
                 <p className="text-lg text-gray-100 leading-relaxed">
-                  To be the most trusted partner for custom outfit solutions, recognized for seamless service and exceptional garment durability.
+                  {vision}
                 </p>
               </div>
             </div>
@@ -239,12 +266,12 @@ function MissionVision() {
           <div className="p-6 rounded-2xl bg-white/5 border border-white/10 shadow-xl">
             <p className="text-amber-300 text-sm font-semibold mb-4">Core Values</p>
             <div className="space-y-4">
-              {coreValues.map((value) => (
+              {coreValues.map((value: { title: string; description: string }) => (
                 <div key={value.title} className="flex items-start gap-3">
                   <CheckCircle2 className="h-5 w-5 text-amber-400 shrink-0 mt-0.5" />
                   <div>
                     <p className="font-semibold text-white">{value.title}</p>
-                    <p className="text-gray-200 text-sm leading-relaxed">{value.desc}</p>
+                    <p className="text-gray-200 text-sm leading-relaxed">{value.description}</p>
                   </div>
                 </div>
               ))}
@@ -257,10 +284,19 @@ function MissionVision() {
 }
 
 function Mockups() {
+  const { data: sanityMockups } = useMockups();
+
+  // If we have Sanity data, show it with pricing. Otherwise use fallback without pricing.
+  const hasSanityData = sanityMockups.length > 0;
+
   return (
     <section className="py-24 bg-white">
       <div className="container mx-auto px-6">
         <div className="text-center mb-16">
+          <div className="inline-flex items-center gap-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white px-4 py-2 rounded-full text-sm font-semibold mb-4">
+            <Tag className="h-4 w-4" />
+            Our Products & Pricing
+          </div>
           <h2 className="text-4xl md:text-5xl font-bold mb-4 text-gray-900">
             See the Quality
           </h2>
@@ -270,21 +306,60 @@ function Mockups() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {mockups.map((img, index) => (
-            <div
-              key={index}
-              className="group relative overflow-hidden rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300"
-            >
-              <img
-                src={img.src}
-                alt={img.alt}
-                className="w-full h-[500px] object-cover transform group-hover:scale-105 transition-transform duration-500"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-6">
-                <p className="text-white font-semibold text-lg">{img.alt}</p>
+          {hasSanityData ? (
+            // Sanity mockups with pricing
+            sanityMockups.map((mockup) => (
+              <div
+                key={mockup._id}
+                className="group relative overflow-hidden rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 bg-white"
+              >
+                <div className="overflow-hidden">
+                  <img
+                    src={urlFor(mockup.image).width(600).height(450).url()}
+                    alt={mockup.alt}
+                    className="w-full h-[400px] object-cover transform group-hover:scale-105 transition-transform duration-500"
+                  />
+                </div>
+                <div className="p-5 bg-white">
+                  <h3 className="font-bold text-xl text-gray-900 mb-2">{mockup.alt}</h3>
+                  {mockup.startingPrice && (
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-sm text-gray-500">Starting from</span>
+                      <span className="text-2xl font-bold text-amber-600">
+                        KSh {mockup.startingPrice.toLocaleString()}
+                      </span>
+                      {mockup.priceNote && (
+                        <span className="text-sm text-gray-500">{mockup.priceNote}</span>
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
-          ))}
+            ))
+          ) : (
+            // Fallback mockups without pricing
+            fallbackMockups.map((img, index) => (
+              <div
+                key={index}
+                className="group relative overflow-hidden rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300"
+              >
+                <img
+                  src={img.src}
+                  alt={img.alt}
+                  className="w-full h-[500px] object-cover transform group-hover:scale-105 transition-transform duration-500"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-6">
+                  <p className="text-white font-semibold text-lg">{img.alt}</p>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+
+        <div className="text-center mt-10">
+          <p className="text-gray-500 text-sm">
+            * Prices are per piece for bulk orders. Final pricing varies based on quantity, customization, and design complexity.
+          </p>
         </div>
       </div>
     </section>
@@ -319,6 +394,95 @@ function Mockups() {
 //     </section>
 //   );
 // }
+// }
+
+function CorporateDiscountsSection() {
+  const { data: corporateDiscounts } = useCorporateDiscounts();
+
+  // Don't show section if no active discounts
+  if (corporateDiscounts.length === 0) return null;
+
+  return (
+    <section className="py-20 bg-gradient-to-br from-slate-100 via-gray-50 to-white relative overflow-hidden">
+      {/* Decorative elements */}
+      <div className="absolute top-0 right-0 w-64 h-64 bg-amber-200 rounded-full blur-3xl opacity-30"></div>
+      <div className="absolute bottom-0 left-0 w-64 h-64 bg-orange-200 rounded-full blur-3xl opacity-30"></div>
+
+      <div className="container mx-auto px-6 relative">
+        <div className="text-center mb-12">
+          <div className="inline-flex items-center gap-2 bg-slate-800 text-white px-4 py-2 rounded-full text-sm font-semibold mb-4">
+            <Users className="h-4 w-4" />
+            Corporate & Bulk Orders
+          </div>
+          <h2 className="text-4xl md:text-5xl font-bold mb-4 text-gray-900">
+            Volume <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-500 to-orange-500">Discounts</span>
+          </h2>
+          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            Planning a large order for your team or organization? Enjoy exclusive discounts on bulk purchases.
+          </p>
+        </div>
+
+        {/* Discount Tiers */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto mb-12">
+          {corporateDiscounts.map((discount: SanityCorporateDiscount) => (
+            <Card
+              key={discount._id}
+              className="relative overflow-hidden border-2 hover:border-amber-500 transition-all duration-300 hover:shadow-xl bg-white"
+            >
+              {/* Accent stripe */}
+              <div
+                className="absolute top-0 left-0 right-0 h-1"
+                style={{ backgroundColor: discount.highlightColor || '#F59E0B' }}
+              ></div>
+              <CardHeader className="pt-6">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-semibold text-gray-500 uppercase tracking-wide">
+                    {discount.maxQuantity
+                      ? `${discount.minQuantity} - ${discount.maxQuantity} items`
+                      : `${discount.minQuantity}+ items`
+                    }
+                  </span>
+                  <div
+                    className="flex items-center gap-1 px-3 py-1 rounded-full text-white font-bold text-lg"
+                    style={{ backgroundColor: discount.highlightColor || '#F59E0B' }}
+                  >
+                    <Percent className="h-4 w-4" />
+                    {discount.discountPercentage}%
+                  </div>
+                </div>
+                <CardTitle className="text-2xl text-gray-900">{discount.title}</CardTitle>
+                <CardDescription className="text-gray-600 mt-2">
+                  {discount.displayMessage}
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center gap-2 text-gray-500 text-sm">
+                  <Phone className="h-4 w-4 text-amber-500" />
+                  <span>Contact us for a personalized quote</span>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        {/* CTA */}
+        <div className="text-center">
+          <p className="text-gray-600 mb-4">
+            Ready to place a corporate order? Get a personalized quote.
+          </p>
+          <Button
+            size="lg"
+            className="bg-slate-800 hover:bg-slate-900 text-white h-14 px-10 text-lg font-semibold rounded-full shadow-xl hover:shadow-2xl transition-all duration-300"
+            onClick={() => document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" })}
+          >
+            <Mail className="mr-2 h-5 w-5" />
+            Request Corporate Quote
+          </Button>
+        </div>
+      </div>
+    </section>
+  );
+}
 
 function ContactForm() {
   const [form, setForm] = useState<FormState>({
@@ -339,7 +503,7 @@ function ContactForm() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    
+
     // Basic validation
     if (!form.name.trim() || !form.email.trim() || !form.phone.trim()) {
       toast.error("Please fill in all required fields.");
@@ -375,7 +539,7 @@ function ContactForm() {
 
       toast.success("Message sent! We'll get back to you within 24 hours.");
 
-      // Best-effort subscription for future campaigns (handled by Vercel KV + Cron)
+      // Store email in Sanity CMS for newsletter campaigns
       try {
         await fetch("/api/subscribe", {
           method: "POST",
@@ -497,6 +661,10 @@ function ContactForm() {
 }
 
 function Header() {
+  const scrollToSection = (id: string) => {
+    document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+  };
+
   return (
     <header className="sticky top-0 z-50 bg-white/98 backdrop-blur-md supports-[backdrop-filter]:bg-white/95 border-b border-gray-200 shadow-lg">
       <div className="container mx-auto px-6">
@@ -524,19 +692,43 @@ function Header() {
             </div>
           </div>
 
-          {/* Navigation Actions */}
-          <nav className="flex items-center gap-3">
-            <Button
-              size="sm"
-              className="bg-amber-500 hover:bg-amber-600 text-white rounded-full shadow-md hover:shadow-lg transition-all duration-300 font-semibold"
-              asChild
+          {/* Navigation Links */}
+          <nav className="hidden md:flex items-center gap-1">
+            <button
+              onClick={() => scrollToSection("services")}
+              className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-amber-600 hover:bg-amber-50 rounded-full transition-colors"
             >
-              <a href="#contact">
-                <Mail className="mr-2 h-4 w-4" />
-                Get Quote
-              </a>
-            </Button>
+              Services
+            </button>
+            <Link
+              to="/shop"
+              className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-amber-600 hover:bg-amber-50 rounded-full transition-colors"
+            >
+              Shop
+            </Link>
+            <button
+              onClick={() => scrollToSection("about")}
+              className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-amber-600 hover:bg-amber-50 rounded-full transition-colors"
+            >
+              About
+            </button>
+            <button
+              onClick={() => scrollToSection("contact")}
+              className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-amber-600 hover:bg-amber-50 rounded-full transition-colors"
+            >
+              Contact
+            </button>
           </nav>
+
+          {/* CTA Button */}
+          <Button
+            size="sm"
+            className="bg-amber-500 hover:bg-amber-600 text-white rounded-full shadow-md hover:shadow-lg transition-all duration-300 font-semibold"
+            onClick={() => scrollToSection("contact")}
+          >
+            <Mail className="mr-2 h-4 w-4" />
+            Get Quote
+          </Button>
         </div>
       </div>
     </header>
@@ -678,19 +870,191 @@ function Footer() {
   );
 }
 
-export default function Index() {
+function IndividualShop() {
+  return (
+    <section className="relative py-24 overflow-hidden">
+      {/* Background with gradient pattern */}
+      <div className="absolute inset-0 bg-gradient-to-br from-amber-50 via-orange-50 to-amber-100"></div>
+      <div className="absolute inset-0 opacity-30">
+        <div className="absolute top-20 left-10 w-72 h-72 bg-amber-300 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-20 right-10 w-96 h-96 bg-orange-300 rounded-full blur-3xl animate-pulse delay-1000"></div>
+      </div>
+
+      <div className="relative container mx-auto px-6">
+        <div className="max-w-6xl mx-auto">
+          {/* Section Header */}
+          <div className="text-center mb-16">
+            <div className="inline-flex items-center gap-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white px-6 py-3 rounded-full text-sm font-bold mb-6 shadow-lg shadow-amber-200">
+              <ShoppingBag className="h-5 w-5" />
+              🆕 Personal Shopping Now Available!
+            </div>
+            <h2 className="text-4xl md:text-6xl font-bold mb-6 text-gray-900">
+              Shop <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-500 to-orange-600">Single Pieces</span>
+            </h2>
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+              Want just one hoodie or a couple of t-shirts? No minimum orders required.
+              Browse our catalog and order any quantity—even just one item!
+            </p>
+          </div>
+
+          {/* Main Content Card */}
+          <div className="bg-white rounded-3xl shadow-2xl shadow-amber-100/50 overflow-hidden">
+            <div className="grid grid-cols-1 lg:grid-cols-2">
+              {/* Left Side - Features */}
+              <div className="p-10 lg:p-14 flex flex-col justify-center">
+                <h3 className="text-2xl font-bold text-gray-900 mb-8">Why Shop With Us?</h3>
+
+                <div className="space-y-6 mb-10">
+                  <div className="flex items-start gap-4 group">
+                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-lg shadow-amber-200 group-hover:scale-110 transition-transform">
+                      <CheckCircle2 className="h-6 w-6 text-white" />
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-gray-900 text-lg">No Minimum Orders</h4>
+                      <p className="text-gray-600">Order 1 item or 100—your choice, no restrictions</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-4 group">
+                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-lg shadow-amber-200 group-hover:scale-110 transition-transform">
+                      <Award className="h-6 w-6 text-white" />
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-gray-900 text-lg">Premium Quality</h4>
+                      <p className="text-gray-600">Same quality as our corporate orders</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-4 group">
+                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-lg shadow-amber-200 group-hover:scale-110 transition-transform">
+                      <Zap className="h-6 w-6 text-white" />
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-gray-900 text-lg">Fast Delivery</h4>
+                      <p className="text-gray-600">Quick shipping across Kenya</p>
+                    </div>
+                  </div>
+                </div>
+
+                <Button
+                  size="lg"
+                  className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white h-16 px-10 text-lg font-bold rounded-2xl shadow-xl shadow-amber-200 hover:shadow-2xl transition-all duration-300 w-full sm:w-auto"
+                  asChild
+                >
+                  <Link to="/shop">
+                    <ShoppingBag className="mr-3 h-6 w-6" />
+                    Browse Our Shop
+                    <ArrowRight className="ml-3 h-6 w-6" />
+                  </Link>
+                </Button>
+              </div>
+
+              {/* Right Side - Product Showcase */}
+              <div className="relative bg-gradient-to-br from-slate-800 via-slate-900 to-slate-800 p-8 lg:p-12 rounded-3xl lg:rounded-none lg:rounded-r-3xl">
+                {/* Decorative glow */}
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 bg-amber-500 rounded-full blur-3xl opacity-30"></div>
+
+                {/* Featured Product */}
+                <div className="relative mb-6">
+                  <div className="text-center mb-4">
+                    <span className="inline-block bg-amber-500 text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wide">
+                      ⭐ Most Popular
+                    </span>
+                  </div>
+                  <div className="relative group rounded-2xl overflow-hidden border-2 border-amber-500/50 shadow-2xl shadow-amber-500/20">
+                    <img
+                      src="https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=600&h=300&fit=crop"
+                      alt="Premium Hoodie"
+                      className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-700"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+                    <div className="absolute bottom-0 left-0 right-0 p-5">
+                      <h3 className="text-white font-bold text-xl mb-1">Premium Hoodies</h3>
+                      <div className="flex items-center justify-between">
+                        <span className="text-amber-400 font-bold text-lg">From KSh 2,500</span>
+                        <span className="text-white/60 text-sm">Multiple Colors</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Product Category Strip */}
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="group text-center">
+                    <div className="relative rounded-xl overflow-hidden mb-2 border border-white/20 hover:border-amber-400/50 transition-all">
+                      <img
+                        src="https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=200&h=150&fit=crop"
+                        alt="T-Shirts"
+                        className="w-full h-20 object-cover group-hover:scale-110 transition-transform duration-500"
+                      />
+                    </div>
+                    <p className="text-white text-sm font-medium">T-Shirts</p>
+                    <p className="text-amber-400 text-xs">KSh 800+</p>
+                  </div>
+                  <div className="group text-center">
+                    <div className="relative rounded-xl overflow-hidden mb-2 border border-white/20 hover:border-amber-400/50 transition-all">
+                      <img
+                        src="https://images.unsplash.com/photo-1625910513413-5fc42c5c7e89?w=200&h=150&fit=crop"
+                        alt="Polo Shirts"
+                        className="w-full h-20 object-cover group-hover:scale-110 transition-transform duration-500"
+                      />
+                    </div>
+                    <p className="text-white text-sm font-medium">Polos</p>
+                    <p className="text-amber-400 text-xs">KSh 1,500+</p>
+                  </div>
+                  <div className="group text-center">
+                    <div className="relative rounded-xl overflow-hidden mb-2 border border-white/20 hover:border-amber-400/50 transition-all">
+                      <img
+                        src="https://images.unsplash.com/photo-1588850561407-ed78c282e89b?w=200&h=150&fit=crop"
+                        alt="Caps"
+                        className="w-full h-20 object-cover group-hover:scale-110 transition-transform duration-500"
+                      />
+                    </div>
+                    <p className="text-white text-sm font-medium">Caps</p>
+                    <p className="text-amber-400 text-xs">KSh 500+</p>
+                  </div>
+                </div>
+
+                {/* Trust Badge */}
+                <div className="mt-6 flex items-center justify-center gap-2 text-white/60 text-sm">
+                  <Star className="h-4 w-4 text-amber-400 fill-amber-400" />
+                  <span>Trusted by 500+ happy customers</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function HomePage() {
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
       <main className="flex-grow">
         <Hero />
         <Services />
+        <IndividualShop />
         <MissionVision />
         <Mockups />
-        {/* <DownloadBrochure /> */}
+        <CorporateDiscountsSection />
         <ContactForm />
       </main>
       <Footer />
+    </div>
+  );
+}
+
+export default function App() {
+  return (
+    <>
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/shop" element={<ShopPage />} />
+        <Route path="/checkout" element={<CheckoutPage />} />
+      </Routes>
       <Toaster
         position="top-center"
         richColors
@@ -704,6 +1068,6 @@ export default function Index() {
           },
         }}
       />
-    </div>
+    </>
   );
 }

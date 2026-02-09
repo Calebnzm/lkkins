@@ -1,37 +1,35 @@
-import { Redis } from "@upstash/redis";
+import { createClient } from "@sanity/client";
 
-const redisUrl =
-  process.env.KV_REST_API_URL ||
-  process.env.KV_URL ||
-  process.env.REDIS_URL ||
-  "";
-
-const redisToken =
-  process.env.KV_REST_API_TOKEN ||
-  process.env.KV_REST_API_READ_ONLY_TOKEN ||
-  "";
-
-const redis =
-  redisUrl && redisToken
-    ? new Redis({
-        url: redisUrl,
-        token: redisToken,
-      })
-    : null;
+const sanityClient = createClient({
+  projectId: process.env.SANITY_PROJECT_ID || process.env.VITE_SANITY_PROJECT_ID,
+  dataset: process.env.SANITY_DATASET || process.env.VITE_SANITY_DATASET || "production",
+  apiVersion: "2024-01-01",
+  useCdn: false,
+  token: process.env.SANITY_API_TOKEN, // Requires write permissions
+});
 
 export default async function handler(req: any, res: any) {
+  // Set CORS headers
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+
+  if (req.method === "OPTIONS") {
+    return res.status(200).end();
+  }
+
   if (req.method !== "POST") {
     res.setHeader("Allow", "POST");
     return res.status(405).json({ error: "Method not allowed" });
   }
 
-  if (!redis) {
-    console.error("Redis environment variables are missing (URL/token)");
-    return res.status(500).json({ error: "Storage is not configured on the server." });
+  if (!process.env.SANITY_API_TOKEN) {
+    console.error("SANITY_API_TOKEN is not configured");
+    return res.status(500).json({ error: "Server configuration error" });
   }
 
   try {
-    const { email, name } = req.body ?? {};
+    const { email, name, source = "contact_form" } = req.body ?? {};
 
     if (!email || typeof email !== "string") {
       return res.status(400).json({ error: "Email is required" });
@@ -42,10 +40,33 @@ export default async function handler(req: any, res: any) {
       return res.status(400).json({ error: "Invalid email" });
     }
 
-    await redis.sadd("subscribers", normalizedEmail);
-    await redis.hset(`subscriber:${normalizedEmail}`, {
+    // Check if subscriber already exists
+    const existingSubscriber = await sanityClient.fetch(
+      `*[_type == "subscriber" && email == $email][0]`,
+      { email: normalizedEmail }
+    );
+
+    if (existingSubscriber) {
+      // If exists but inactive, reactivate them
+      if (!existingSubscriber.isActive) {
+        await sanityClient
+          .patch(existingSubscriber._id)
+          .set({ isActive: true })
+          .commit();
+        return res.status(200).json({ ok: true, reactivated: true });
+      }
+      // Already subscribed and active
+      return res.status(200).json({ ok: true, existing: true });
+    }
+
+    // Create new subscriber
+    await sanityClient.create({
+      _type: "subscriber",
+      email: normalizedEmail,
       name: typeof name === "string" ? name.trim() : "",
-      createdAt: Date.now(),
+      source,
+      isActive: true,
+      subscribedAt: new Date().toISOString(),
     });
 
     return res.status(200).json({ ok: true });
@@ -54,5 +75,3 @@ export default async function handler(req: any, res: any) {
     return res.status(500).json({ error: "Internal server error" });
   }
 }
-
-

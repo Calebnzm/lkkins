@@ -1,9 +1,5 @@
 {
-  "crons": [
-    {
-      "path": "/api/send-campaign",
-      "schedule": "0 9 */14 * *"
-    }
+  "rewrites": [
+    { "source": "/api/:path*", "destination": "/api/:path*" }
   ]
 }
-

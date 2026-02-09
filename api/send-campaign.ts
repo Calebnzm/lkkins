@@ -20,6 +20,7 @@ const redis =
     : null;
 
 const EMAILJS_API_URL = "https://api.emailjs.com/api/v1.0/email/send";
+const EMAILJS_DEFAULT_ORIGIN = "https://lkkinselegance.com";
 
 export default async function handler(req: any, res: any) {
   if (req.method !== "GET" && req.method !== "POST") {
@@ -36,6 +37,7 @@ export default async function handler(req: any, res: any) {
   const templateId = process.env.EMAILJS_CAMPAIGN_TEMPLATE_ID || process.env.VITE_EMAILJS_TEMPLATE_ID;
   const privateKey = process.env.EMAILJS_PRIVATE_KEY;
   const publicKey = process.env.EMAILJS_PUBLIC_KEY || process.env.VITE_EMAILJS_PUBLIC_KEY;
+  const origin = process.env.EMAILJS_ORIGIN || EMAILJS_DEFAULT_ORIGIN;
 
   if (!serviceId || !templateId || !privateKey || !publicKey) {
     console.error("Missing EmailJS environment variables (serviceId/templateId/privateKey/publicKey)");
@@ -64,6 +66,8 @@ export default async function handler(req: any, res: any) {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            Origin: origin,
+            Referer: origin,
           },
           body: JSON.stringify({
             service_id: serviceId,
